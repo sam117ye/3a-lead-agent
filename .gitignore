@@ -1,0 +1,11 @@
+# Secrets
+.env
+key.txt
+
+# Everything the pipeline produces
+output/
+
+# Python
+__pycache__/
+*.pyc
+.venv/

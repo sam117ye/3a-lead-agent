@@ -1,0 +1,29 @@
+# Stage 6: discover prospects
+
+$company_context
+
+Task: find up to $count companies that are strong new prospects for 3A Composites Core Materials.
+
+What we are looking for:
+$brief
+
+Company types:
+$company_types
+
+Every prospect must meet these criteria:
+$must_have
+
+Leave out companies that match any of these:
+$must_not
+
+Lessons from earlier reviews of suggested companies:
+$derived_rules
+
+Examples of ideal clients we already know (do not return them):
+$positive_examples
+
+Requirements:
+- Return real companies with their official website, and verify each one from its own website or other credible sources.
+- Prefer companies with evidence of composite or FRP construction, sandwich cores, infusion or similar processes, or with clear needs that sandwich composites solve (weight, stiffness, build speed, recyclability).
+- Do not return companies from the exclusion list, dealers, brokers, charter companies or marinas.
+- For each company give its country, its segment (what it builds), a selection rationale that cites evidence, material signals (materials and processes it uses), need signals (engineering or production needs) and your match confidence.

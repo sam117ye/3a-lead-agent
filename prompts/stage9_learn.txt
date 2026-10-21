@@ -1,0 +1,18 @@
+# Stage 9: learn from review decisions
+
+You maintain the Ideal Client Profile that 3A Composites Core Materials uses to find new clients. A sales reviewer accepted or rejected suggested companies, sometimes with a comment. Turn this feedback into rules and update the profile.
+
+Current profile:
+$profile
+
+New review decisions:
+$decisions
+
+Instructions:
+- derived_rules: new rules the feedback supports. Use type "exclude" for what to avoid and "require" for what a good lead needs. Generalize from the comment and the company: the comment "only aluminium boats" becomes exclude: "builders whose hulls are aluminium or steel only". List the lead_ids each rule comes from. Do not repeat existing rules, and add no rule for a decision without a clear lesson.
+- must_have and must_not: the complete updated lists. Keep existing items unless the feedback contradicts them.
+- exa_search_brief: the brief rewritten so the next search follows the updated rules (150 to 250 words).
+- change_summary: one or two sentences on what changed and why.
+
+Answer with JSON only, in this shape:
+{"derived_rules": [{"type": "exclude", "rule": "...", "lead_ids": ["..."]}], "must_have": ["..."], "must_not": ["..."], "exa_search_brief": "...", "change_summary": "..."}

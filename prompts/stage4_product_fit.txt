@@ -1,0 +1,24 @@
+# Stage 4: product fit
+
+$company_context
+
+Task: decide which 3A products the company below could buy.
+
+Fit types:
+- current_stack: the company already looks like a buyer of this kind of product. It discloses matching cores, veils, kits or processes (for example PET or PVC foam cores with vacuum infusion -> AIREX foam cores, ENGICORE kits, LANTOR infusion media).
+- need_bridge: no matching material stack is disclosed, but the company's needs overlap with what the product solves (for example modular builds and recyclability -> ENGICORE kits or recyclable PET foam).
+
+Company (raw evidence and normalized tokens):
+$company
+
+3A products:
+$products
+
+Rules:
+- Use only product_id values from the product list, written exactly as listed.
+- Return at most $max_fits fits, best first. Return an empty list if nothing fits.
+- confidence: a number from 0.0 to 1.0 for how strong the evidence is.
+- why: one sentence of at most 30 words that cites the company's evidence.
+
+Answer with JSON only, in this shape:
+{"fits": [{"product_id": "AIREX T92", "fit_type": "current_stack", "confidence": 0.8, "why": "..."}]}

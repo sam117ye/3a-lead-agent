@@ -1,0 +1,24 @@
+# Stage 1: 3A product taxonomy
+
+$company_context
+
+Task: build the complete, current product dictionary of 3A Composites Core Materials.
+
+Research these websites thoroughly, including product pages, product finders and technical datasheets (PDF):
+- https://www.3accorematerials.com (AIREX, BALTEK, ENGICORE)
+- https://www.lantorcomposites.com (LANTOR)
+
+Brand rules:
+- AIREX and BALTEK products are manufactured by 3A Composites Core Materials.
+- ENGICORE is a kitting service (machined, shaped and kitted AIREX or BALTEK cores). List each ENGICORE offering as a product.
+- LANTOR products are made by Lantor Composites and distributed by 3A Composites.
+
+Return one entry per product line (for example one entry per foam grade, not one per density or sheet size). For each product:
+- product_id: the official product name as the manufacturer writes it, for example "AIREX T92".
+- brand: AIREX, BALTEK, LANTOR or ENGICORE.
+- active: "yes" if currently offered, "no" if discontinued, "unknown" if unclear.
+- material_composition: what the product is made of, in the source's own words.
+- structural_mechanics: key mechanical properties (density range, shear and compressive strength, stiffness, impact and fatigue behaviour), with numbers where the source gives them.
+- engineering_tolerances: temperature limits, compatible resins and processes (vacuum infusion, prepreg, RTM, thermoforming, hand lay-up), and other processing limits.
+
+Use only information the sources support. Leave a field empty when the sources say nothing about it.

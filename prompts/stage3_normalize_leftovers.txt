@@ -1,0 +1,14 @@
+# Stage 3: normalize leftover phrases
+
+You label phrases about composite manufacturing with canonical tokens. Only label what each phrase explicitly says. Do not match products and do not rewrite anything.
+
+Allowed tokens for each attribute:
+$allowed_tokens
+
+Phrases:
+$phrases
+
+For each phrase, return the allowed tokens of its attribute that the phrase clearly refers to. Return an empty list when none apply. Never use a token that is not allowed for the phrase's attribute.
+
+Answer with JSON only, in this shape:
+{"results": [{"id": 0, "tokens": ["TOKEN"]}]}

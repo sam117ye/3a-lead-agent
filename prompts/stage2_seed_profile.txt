@@ -1,0 +1,23 @@
+# Stage 2: seed manufacturing profile
+
+$company_context
+
+Task: build a company-level manufacturing profile of the boat or vessel manufacturer below. It is a seed company for 3A's search for new clients: it may already buy sandwich core materials, or it may be an aspirational target that does not use them yet.
+
+Company: $company
+Website: $website
+
+Research the company's own website (model pages, construction and technology pages, brochures), press releases, boat-show coverage, trade press (composites and boatbuilding magazines) and supplier case studies.
+
+Fill in:
+- manufacturer: name, website and location (headquarters and main shipyards).
+- end_products: the vessels or components they build (model ranges, boat types, sizes).
+- manufacturing_processes: how they build hulls, decks and structures (for example vacuum infusion, hand lay-up, RTM, prepreg, thermoforming, CNC kitting, modular assembly).
+- material_stack: what they build with: cores, reinforcements, resins, veils and infusion media, with brand or product names when disclosed.
+- production_constraints: limits on their production (labour, cycle time, yard capacity, cost, regulations).
+- performance_mandates: targets they commit to (weight, stiffness, speed or range, comfort, sustainability, recyclability).
+- core_engineering_challenge: in one or two sentences, the main engineering challenge where sandwich composites could help them.
+
+Rules:
+- Use short phrases close to the source wording, for example "vacuum infusion of hull and deck" or "recycled PET foam core".
+- Only report what the sources support. Leave a list empty when the information is not disclosed: an empty list means undisclosed, not absent.

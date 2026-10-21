@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3A Lead Agent</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --page: #edf1f1;
+      --surface: #fbfcfc;
+      --surface-sunk: #f1f5f5;
+      --ink: #15262f;
+      --ink-2: #44565f;
+      --muted: #5d6e76;
+      --line: #d6dee0;
+      --track: #e2e9ea;
+      --accent: #0b6a78;
+      --selected: #e0edef;
+      --accept: #1c7a4a;
+      --reject: #b0362f;
+      --on-status: #ffffff;
+      --error-bg: #f8e7e5;
+      --ply-need: #2a6fb8;
+      --ply-stack: #d38a2a;
+      --ply-profile: #2b9a74;
+      --ply-exa: #8a5cc7;
+      --hatch: #15262f;
+      --font: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-narrow: "Barlow Condensed", "Barlow", system-ui, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --page: #0f1a20;
+        --surface: #17232b;
+        --surface-sunk: #1d2b34;
+        --ink: #e6edef;
+        --ink-2: #b7c5cb;
+        --muted: #93a4ac;
+        --line: #2b3a44;
+        --track: #24333c;
+        --accent: #5db4c2;
+        --selected: #21363f;
+        --accept: #3daf76;
+        --reject: #e26a61;
+        --on-status: #0f1a20;
+        --error-bg: #3a2124;
+        --ply-need: #3f86d4;
+        --ply-stack: #c7832e;
+        --ply-profile: #2c9d78;
+        --ply-exa: #9a76dc;
+        --hatch: #e6edef;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--page);
+      color: var(--ink);
+      font: 400 15px/1.55 var(--font);
+    }
+    a { color: var(--accent); text-underline-offset: 2px; }
+    button { font: inherit; color: inherit; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    h1, h2, h3, p { margin: 0; }
+
+    /* Top bar */
+    .topbar {
+      flex: none;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 10px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { font: 600 21px/1 var(--font-narrow); letter-spacing: 0.01em; white-space: nowrap; }
+    .profile-status { margin-left: auto; color: var(--muted); font-size: 14px; text-align: right; }
+    .top-actions { display: flex; gap: 8px; }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 4px;
+      padding: 7px 14px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn:hover:not(:disabled) { border-color: var(--ink-2); }
+    .btn:disabled { opacity: 0.55; cursor: default; }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+    .btn.accept { background: var(--accept); border-color: var(--accept); color: var(--on-status); min-width: 108px; }
+    .btn.reject { background: var(--surface); border-color: var(--reject); color: var(--reject); min-width: 108px; }
+    .btn.reject:hover:not(:disabled) { background: var(--reject); color: var(--on-status); border-color: var(--reject); }
+
+    .notice { flex: none; padding: 10px 24px; background: var(--selected); border-bottom: 1px solid var(--line); font-size: 14px; }
+    .notice.error { background: var(--error-bg); }
+    .notice ul { margin: 4px 0 0; padding-left: 18px; }
+
+    /* Two panes */
+    .layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(280px, 340px) 1fr; }
+    .queue { min-height: 0; overflow-y: auto; background: var(--surface); border-right: 1px solid var(--line); }
+    .detail { min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
+
+    /* Queue */
+    .tabs { position: sticky; top: 0; z-index: 1; display: flex; background: var(--surface); border-bottom: 1px solid var(--line); }
+    .tab {
+      flex: 1;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      background: none;
+      padding: 12px 6px 10px;
+      color: var(--muted);
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+    .tab .count { font-variant-numeric: tabular-nums; margin-left: 4px; }
+    .rows { list-style: none; margin: 0; padding: 0; }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 2px 12px;
+      width: 100%;
+      padding: 12px 20px 14px;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background: none;
+      text-align: left;
+      cursor: pointer;
+    }
+    .row:hover { background: var(--surface-sunk); }
+    .row[aria-current="true"] { background: var(--selected); box-shadow: inset 3px 0 0 var(--accent); }
+    .row-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .row-score { font: 600 17px/1.3 var(--font-narrow); font-variant-numeric: tabular-nums; }
+    .row-meta { grid-column: 1 / -1; color: var(--muted); font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .row .plies { grid-column: 1 / -1; margin-top: 6px; }
+    .empty { padding: 28px 20px; color: var(--muted); }
+
+    /* Score bar: one ply per score part, like the layers of a laminate */
+    .plies { position: relative; display: flex; gap: 2px; width: 100%; }
+    .plies.mini { height: 5px; }
+    .plies.large { height: 18px; }
+    .ply { min-width: 2px; }
+    .ply.end { border-radius: 0 4px 4px 0; }
+    .track { background: var(--track); border-radius: 0 4px 4px 0; }
+    .cut {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: repeating-linear-gradient(45deg, var(--hatch) 0 1.5px, transparent 1.5px 5px);
+      opacity: 0.55;
+    }
+
+    /* Lead detail */
+    .lead { width: 100%; max-width: 780px; padding: 30px 40px 32px; animation: enter 160ms ease-out; }
+    @keyframes enter { from { opacity: 0; transform: translateY(4px); } }
+    .lead h1 { font: 600 38px/1.08 var(--font-narrow); letter-spacing: -0.005em; }
+    .facts { display: flex; flex-wrap: wrap; gap: 2px 22px; margin-top: 8px; color: var(--ink-2); }
+
+    .score { display: grid; grid-template-columns: 112px 1fr; gap: 6px 20px; align-items: center; margin-top: 26px; padding: 18px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+    .score-figure { grid-row: span 2; }
+    .score-figure strong { display: block; font: 600 46px/1 var(--font-narrow); }
+    .score-figure span { color: var(--muted); font-size: 13.5px; }
+    .legend { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 4px 18px; font-size: 13.5px; color: var(--ink-2); }
+    .legend li { display: flex; align-items: center; gap: 8px; }
+    .legend .value { margin-left: auto; color: var(--ink); font-variant-numeric: tabular-nums; }
+    .swatch { flex: none; width: 10px; height: 10px; border-radius: 2px; }
+    .swatch.hatched { background: repeating-linear-gradient(45deg, var(--hatch) 0 1.5px, transparent 1.5px 4px); opacity: 0.7; }
+
+    .lead section + section, .lead .score + section { margin-top: 28px; }
+    .lead h2 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+    .lead h3 { font-size: 14px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+    .prose { max-width: 68ch; color: var(--ink); }
+
+    .fits { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+    .fits li { padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .fit-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
+    .fit-name { font: 600 19px/1.2 var(--font-narrow); white-space: nowrap; }
+    .fit-type { color: var(--ink-2); font-size: 14px; }
+    .fit-confidence { margin-left: auto; color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .fit-why { margin-top: 4px; max-width: 68ch; color: var(--ink-2); }
+
+    .signals { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px 24px; }
+    .chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+    .chips li { padding: 2px 9px; border-radius: 3px; background: var(--surface-sunk); border: 1px solid var(--line); font-size: 13.5px; }
+    details { margin-top: 14px; }
+    summary { cursor: pointer; color: var(--accent); font-size: 14px; }
+    .evidence { margin: 8px 0 0; padding-left: 18px; color: var(--ink-2); max-width: 68ch; }
+    .sources { margin: 0; padding-left: 18px; }
+    .sources li + li { margin-top: 2px; }
+    .quiet-text { color: var(--muted); }
+
+    /* Decision panel */
+    .decision { position: sticky; bottom: 0; margin-top: auto; background: var(--surface); border-top: 1px solid var(--line); }
+    .decision-inner { max-width: 780px; padding: 14px 40px 16px; }
+    .decision label { display: block; font-weight: 500; margin-bottom: 6px; }
+    .decision label span { color: var(--muted); font-weight: 400; }
+    .decision textarea {
+      width: 100%;
+      min-height: 56px;
+      resize: vertical;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--page);
+      color: var(--ink);
+      font: inherit;
+    }
+    .decision-actions { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+    .keys { margin-right: auto; color: var(--muted); font-size: 13px; }
+    kbd { font: inherit; padding: 0 5px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface-sunk); }
+    .verdict { font-weight: 600; }
+    .verdict.accepted { color: var(--accept); }
+    .verdict.rejected { color: var(--reject); }
+
+    .placeholder { margin: auto; max-width: 440px; padding: 40px 24px; text-align: center; color: var(--ink-2); }
+    .placeholder h1 { font: 600 28px/1.2 var(--font-narrow); color: var(--ink); margin-bottom: 8px; }
+    .placeholder code { background: var(--surface-sunk); padding: 1px 6px; border-radius: 3px; }
+
+    @media (max-width: 860px) {
+      html, body { height: auto; }
+      body { display: block; }
+      .topbar { flex-wrap: wrap; padding: 10px 16px; }
+      .profile-status { margin-left: 0; text-align: left; flex-basis: 100%; order: 3; }
+      .top-actions { margin-left: auto; }
+      .notice { padding: 10px 16px; }
+      .layout { display: block; }
+      .queue { max-height: 45vh; border-right: 0; border-bottom: 1px solid var(--line); }
+      .detail { overflow: visible; }
+      .lead { padding: 24px 16px; }
+      .lead h1 { font-size: 32px; }
+      .score { grid-template-columns: 1fr; }
+      .score-figure { grid-row: auto; }
+      .decision { position: static; }
+      .decision-inner { padding: 14px 16px 20px; }
+      .keys { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lead { animation: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">3A Lead Agent</div>
+    <p class="profile-status" id="profile-status"></p>
+    <div class="top-actions">
+      <button class="btn" id="learn-button" type="button">Learn from decisions</button>
+      <button class="btn primary" id="discover-button" type="button">Find new leads</button>
+    </div>
+  </header>
+  <div class="notice" id="notice" role="status" aria-live="polite" hidden></div>
+
+  <main class="layout">
+    <nav class="queue" aria-label="Leads">
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <ul class="rows" id="rows"></ul>
+    </nav>
+    <div class="detail" id="detail"></div>
+  </main>
+
+  <script>
+    const PLIES = [
+      { key: "need_overlap", label: "Needs overlap", color: "--ply-need" },
+      { key: "stack_overlap", label: "Materials and processes", color: "--ply-stack" },
+      { key: "profile_similarity", label: "Profile similarity", color: "--ply-profile" },
+      { key: "exa_confidence", label: "Exa confidence", color: "--ply-exa" },
+    ];
+    const TABS = [
+      { status: "pending_review", label: "To review" },
+      { status: "accepted", label: "Accepted" },
+      { status: "rejected", label: "Rejected" },
+    ];
+    const FIT_TYPES = {
+      current_stack: "Already uses similar materials",
+      need_bridge: "Needs overlap, no core materials disclosed",
+    };
+    const ACRONYMS = new Set(["PET", "PVC", "PEI", "PP", "RTM"]);
+    const DISCOVERY_POLL_MS = 10000;
+
+    const state = { tab: "pending_review", leads: [], selectedId: null, summary: null, searching: false };
+    const $ = (selector) => document.querySelector(selector);
+
+    // ---------- Helpers ----------
+    function esc(value) {
+      const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
+      return String(value ?? "").replace(/[&<>"']/g, (char) => entities[char]);
+    }
+
+    function safeUrl(url) {
+      const text = String(url || "").trim();
+      if (/^https?:\/\//i.test(text)) return text;
+      if (/^[\w.-]+\.[a-z]{2,}(\/\S*)?$/i.test(text)) return "https://" + text;
+      return null;
+    }
+
+    function hostOf(url) {
+      try { return new URL(url).hostname.replace(/^www\./, ""); } catch { return url; }
+    }
+
+    function humanize(token) {
+      if (ACRONYMS.has(token)) return token;
+      const text = token.toLowerCase().replaceAll("_", " ");
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    function formatDate(iso) {
+      return iso ? new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, { headers: { "Content-Type": "application/json" }, ...options });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.detail || `The server answered ${response.status}.`);
+      return body;
+    }
+
+    function showNotice(html, kind = "info") {
+      const notice = $("#notice");
+      notice.innerHTML = html;
+      notice.className = kind === "error" ? "notice error" : "notice";
+      notice.hidden = !html;
+    }
+
+    // ---------- Loading ----------
+    async function loadSummary() {
+      state.summary = await api("/api/summary");
+      renderHeader();
+      renderTabs();
+    }
+
+    async function loadLeads() {
+      state.leads = await api(`/api/leads?status=${state.tab}`);
+      if (!state.leads.some((lead) => lead.lead_id === state.selectedId)) {
+        state.selectedId = state.leads[0]?.lead_id ?? null;
+      }
+      renderQueue();
+      renderDetail();
+    }
+
+    async function loadAll() {
+      await loadSummary();
+      await loadLeads();
+    }
+
+    // ---------- Score bar ----------
+    function scoreScale() {
+      const weights = state.summary.score_weights;
+      return PLIES.reduce((sum, ply) => sum + weights[ply.key], 0);
+    }
+
+    function scoreParts(lead) {
+      const weights = state.summary.score_weights;
+      const parts = PLIES.map((ply) => ({ ...ply, value: weights[ply.key] * (lead.score_breakdown[ply.key] || 0) }));
+      const penalty = weights.dislike_similarity * (lead.score_breakdown.dislike_similarity || 0);
+      return { parts, penalty };
+    }
+
+    function plyBar(lead, size) {
+      const scale = scoreScale();
+      const { parts, penalty } = scoreParts(lead);
+      const filled = parts.filter((part) => part.value > 0);
+      const gross = filled.reduce((sum, part) => sum + part.value, 0);
+      const plies = filled.map((part, index) => {
+        const end = index === filled.length - 1 && gross >= scale ? " end" : "";
+        return `<span class="ply${end}" style="flex-grow:${part.value};background:var(${part.color})" title="${esc(part.label)}: ${part.value.toFixed(2)}"></span>`;
+      }).join("");
+      const rest = gross < scale ? `<span class="track" style="flex-grow:${scale - gross}"></span>` : "";
+      const cutWidth = Math.min(penalty, gross);
+      const cut = cutWidth > 0
+        ? `<span class="cut" style="left:${((gross - cutWidth) / scale) * 100}%;width:${(cutWidth / scale) * 100}%" title="Looks like a rejected lead: -${penalty.toFixed(2)}"></span>`
+        : "";
+      return `<span class="plies ${size}" role="img" aria-label="Score ${lead.score.toFixed(2)} of ${scale.toFixed(0)}">${plies}${rest}${cut}</span>`;
+    }
+
+    function scoreLegend(lead) {
+      const { parts, penalty } = scoreParts(lead);
+      const items = parts.map((part) => `
+        <li><span class="swatch" style="background:var(${part.color})"></span>${esc(part.label)}
+          <span class="value">${part.value.toFixed(2)}</span></li>`);
+      if (penalty > 0) {
+        const name = lead.closest_rejected_lead ? `“${esc(lead.closest_rejected_lead)}”` : "a rejected lead";
+        items.push(`<li><span class="swatch hatched"></span>Looks like ${name}<span class="value">-${penalty.toFixed(2)}</span></li>`);
+      }
+      return `<ul class="legend">${items.join("")}</ul>`;
+    }
+
+    // ---------- Rendering ----------
+    function renderHeader() {
+      const { profile_version, new_decisions } = state.summary;
+      $("#profile-status").textContent = profile_version
+        ? `Ideal client profile v${profile_version}` + (new_decisions ? `, ${new_decisions} new decision${new_decisions === 1 ? "" : "s"} to learn from` : "")
+        : "No ideal client profile yet";
+      $("#learn-button").disabled = !new_decisions;
+      $("#learn-button").textContent = new_decisions ? `Learn from ${new_decisions} decision${new_decisions === 1 ? "" : "s"}` : "Learn from decisions";
+      $("#discover-button").disabled = !profile_version || state.searching;
+    }
+
+    function renderTabs() {
+      const counts = state.summary.counts;
+      $("#tabs").innerHTML = TABS.map((tab) => `
+        <button class="tab" role="tab" type="button" data-tab="${tab.status}" aria-selected="${tab.status === state.tab}">
+          ${tab.label}<span class="count">${counts[tab.status] ?? 0}</span>
+        </button>`).join("");
+    }
+
+    function renderQueue() {
+      const rows = $("#rows");
+      if (!state.leads.length) {
+        rows.innerHTML = `<li class="empty">${state.tab === "pending_review" ? "Nothing left to review." : "No leads here yet."}</li>`;
+        return;
+      }
+      rows.innerHTML = state.leads.map((lead) => `
+        <li>
+          <button class="row" type="button" data-id="${esc(lead.lead_id)}" aria-current="${lead.lead_id === state.selectedId}">
+            <span class="row-name">${esc(lead.name)}</span>
+            <span class="row-score">${lead.score.toFixed(2)}</span>
+            <span class="row-meta">${esc([lead.country, lead.segment].filter(Boolean).join(", "))}</span>
+            ${plyBar(lead, "mini")}
+          </button>
+        </li>`).join("");
+    }
+
+    function renderDetail() {
+      const lead = state.leads.find((item) => item.lead_id === state.selectedId);
+      $("#detail").innerHTML = lead ? leadHtml(lead) + decisionHtml(lead) : placeholderHtml();
+    }
+
+    function placeholderHtml() {
+      const { counts, profile_version } = state.summary;
+      if (!profile_version) {
+        return `<div class="placeholder"><h1>No leads yet</h1>
+          <p>Build the ideal client profile and the first leads in the terminal with <code>python -m lead_agent run</code>, then reload this page.</p></div>`;
+      }
+      if (state.tab === "pending_review" && counts.accepted + counts.rejected > 0) {
+        return `<div class="placeholder"><h1>All leads reviewed</h1>
+          <p>Your decisions teach the agent. Use Learn from decisions to update the profile, then Find new leads.</p></div>`;
+      }
+      if (state.tab === "pending_review") {
+        return `<div class="placeholder"><h1>No leads to review</h1><p>Use Find new leads to search with the current profile.</p></div>`;
+      }
+      return `<div class="placeholder"><h1>Nothing here yet</h1><p>Leads you ${state.tab === "accepted" ? "accept" : "reject"} appear in this list.</p></div>`;
+    }
+
+    function leadHtml(lead) {
+      const url = safeUrl(lead.website);
+      const facts = [
+        url ? `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(hostOf(url))}</a>` : "",
+        lead.country ? `<span>${esc(lead.country)}</span>` : "",
+        lead.segment ? `<span>${esc(lead.segment)}</span>` : "",
+      ].filter(Boolean).join("");
+      return `
+        <article class="lead">
+          <h1>${esc(lead.name)}</h1>
+          <p class="facts">${facts}</p>
+
+          <div class="score">
+            <div class="score-figure"><span>Score</span><strong>${lead.score.toFixed(2)}</strong><span>out of ${scoreScale().toFixed(0)}</span></div>
+            ${plyBar(lead, "large")}
+            ${scoreLegend(lead)}
+          </div>
+
+          <section>
+            <h2>Why it was suggested</h2>
+            <p class="prose">${esc(lead.selection_rationale) || '<span class="quiet-text">No rationale given.</span>'}</p>
+          </section>
+
+          <section>
+            <h2>Products that fit</h2>
+            ${fitsHtml(lead.fits)}
+          </section>
+
+          <section>
+            <h2>Signals found</h2>
+            ${signalsHtml(lead)}
+          </section>
+
+          <section>
+            <h2>Sources</h2>
+            ${sourcesHtml(lead.citations)}
+          </section>
+        </article>`;
+    }
+
+    function fitsHtml(fits) {
+      if (!fits.length) return `<p class="quiet-text">No product matched this company.</p>`;
+      return `<ul class="fits">${fits.map((fit) => {
+        const showBrand = !fit.product_id.toUpperCase().startsWith(fit.brand);
+        return `<li>
+          <div class="fit-head">
+            <span class="fit-name">${esc(fit.product_id)}</span>
+            ${showBrand ? `<span class="fit-type">${esc(fit.brand)}</span>` : ""}
+            <span class="fit-type">${esc(FIT_TYPES[fit.fit_type] || fit.fit_type)}</span>
+            <span class="fit-confidence">${Math.round(fit.confidence * 100)}% confident</span>
+          </div>
+          <p class="fit-why">${esc(fit.why)}</p>
+        </li>`;
+      }).join("")}</ul>`;
+    }
+
+    function chips(tokens) {
+      return tokens.length
+        ? `<ul class="chips">${tokens.map((token) => `<li>${esc(humanize(token))}</li>`).join("")}</ul>`
+        : `<p class="quiet-text">None found</p>`;
+    }
+
+    function signalsHtml(lead) {
+      const evidence = [...(lead.material_signals.raw || []), ...(lead.need_signals.raw || [])];
+      return `
+        <div class="signals">
+          <div><h3>Materials and processes</h3>${chips([...lead.tokens.material, ...lead.tokens.process])}</div>
+          <div><h3>Needs</h3>${chips(lead.tokens.need)}</div>
+        </div>
+        ${evidence.length ? `<details><summary>Show the evidence Exa found (${evidence.length})</summary>
+          <ul class="evidence">${evidence.map((text) => `<li>${esc(text)}</li>`).join("")}</ul></details>` : ""}`;
+    }
+
+    function sourcesHtml(citations) {
+      const links = (citations || []).map((citation) => ({ ...citation, url: safeUrl(citation.url) })).filter((c) => c.url);
+      if (!links.length) return `<p class="quiet-text">No sources returned.</p>`;
+      return `<ol class="sources">${links.map((c) =>
+        `<li><a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title || hostOf(c.url))}</a></li>`).join("")}</ol>`;
+    }
+
+    function decisionHtml(lead) {
+      if (lead.status !== "pending_review") {
+        const decision = lead.decision || {};
+        const verdict = lead.status === "accepted" ? "Accepted" : "Rejected";
+        const comment = decision.comment ? ` Comment: “${esc(decision.comment)}”` : " No comment.";
+        return `<div class="decision"><div class="decision-inner">
+          <p><span class="verdict ${lead.status}">${verdict}</span> on ${esc(formatDate(decision.decided_at))}.${comment}</p>
+        </div></div>`;
+      }
+      return `<form class="decision" id="decision-form"><div class="decision-inner">
+          <label for="comment">Comment for the agent <span>(optional, it learns from this)</span></label>
+          <textarea id="comment" placeholder="For example: builds aluminium boats only, no composite parts"></textarea>
+          <div class="decision-actions">
+            <span class="keys"><kbd>A</kbd> accept, <kbd>R</kbd> reject, <kbd>J</kbd> <kbd>K</kbd> next and previous</span>
+            <button class="btn reject" type="button" data-decision="reject">Reject</button>
+            <button class="btn accept" type="button" data-decision="accept">Accept</button>
+          </div>
+        </div></form>`;
+    }
+
+    // ---------- Actions ----------
+    function select(leadId) {
+      state.selectedId = leadId;
+      renderQueue();
+      renderDetail();
+      $("#detail").scrollTop = 0;
+    }
+
+    function move(step) {
+      const index = state.leads.findIndex((lead) => lead.lead_id === state.selectedId);
+      const next = state.leads[index + step];
+      if (next) {
+        select(next.lead_id);
+        document.querySelector(`.row[data-id="${CSS.escape(next.lead_id)}"]`)?.scrollIntoView({ block: "nearest" });
+      }
+    }
+
+    async function decide(decision) {
+      const lead = state.leads.find((item) => item.lead_id === state.selectedId);
+      if (!lead || lead.status !== "pending_review") return;
+      const comment = $("#comment")?.value || "";
+      document.querySelectorAll("[data-decision]").forEach((button) => { button.disabled = true; });
+      try {
+        await api(`/api/leads/${encodeURIComponent(lead.lead_id)}/decision`, {
+          method: "POST",
+          body: JSON.stringify({ decision, comment }),
+        });
+        const index = state.leads.indexOf(lead);
+        state.leads.splice(index, 1);
+        state.selectedId = (state.leads[index] || state.leads[index - 1])?.lead_id ?? null;
+        showNotice(`${decision === "accept" ? "Accepted" : "Rejected"} ${esc(lead.name)}.`);
+        await loadSummary();
+        renderQueue();
+        renderDetail();
+      } catch (error) {
+        showNotice(esc(error.message), "error");
+        document.querySelectorAll("[data-decision]").forEach((button) => { button.disabled = false; });
+      }
+    }
+
+    async function learn() {
+      const button = $("#learn-button");
+      button.disabled = true;
+      button.textContent = "Learning...";
+      try {
+        const result = await api("/api/learn", { method: "POST" });
+        const rules = (result.new_rules || []).map((rule) => `<li>${esc(rule.type)}: ${esc(rule.rule)}</li>`).join("");
+        showNotice(result.updated
+          ? `Ideal client profile updated to v${result.version}. ${esc(result.change_summary)}${rules ? `<ul>${rules}</ul>` : ""}`
+          : esc(result.change_summary));
+      } catch (error) {
+        showNotice(esc(error.message), "error");
+      }
+      await loadSummary();
+    }
+
+    async function startDiscovery() {
+      try {
+        renderDiscovery(await api("/api/discover", { method: "POST" }));
+      } catch (error) {
+        showNotice(esc(error.message), "error");
+      }
+    }
+
+    async function checkDiscovery() {
+      try {
+        renderDiscovery(await api("/api/discover"));
+      } catch (error) {
+        showNotice(esc(error.message), "error");
+      }
+    }
+
+    async function renderDiscovery(status) {
+      const wasSearching = state.searching;
+      state.searching = status.running;
+      if (status.running) {
+        const since = new Date(status.started_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        showNotice(`Searching for new leads since ${since}. Exa can take 30 minutes or more; you can keep reviewing.`);
+        setTimeout(checkDiscovery, DISCOVERY_POLL_MS);
+      } else if (wasSearching) {
+        showNotice(status.error
+          ? `The search stopped: ${esc(status.error)}`
+          : `Search finished: ${status.new_leads} new lead${status.new_leads === 1 ? "" : "s"} to review.`, status.error ? "error" : "info");
+        await loadAll();
+      }
+      if (state.summary) renderHeader();
+    }
+
+    // ---------- Events ----------
+    document.addEventListener("click", (event) => {
+      const tab = event.target.closest("[data-tab]");
+      const row = event.target.closest(".row");
+      const decisionButton = event.target.closest("[data-decision]");
+      if (tab && tab.dataset.tab !== state.tab) {
+        state.tab = tab.dataset.tab;
+        state.selectedId = null;
+        renderTabs();
+        loadLeads();
+      } else if (row) {
+        select(row.dataset.id);
+      } else if (decisionButton) {
+        decide(decisionButton.dataset.decision);
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.target.closest("textarea, input") || event.metaKey || event.ctrlKey || event.altKey) return;
+      const key = event.key.toLowerCase();
+      if (key === "j") move(1);
+      if (key === "k") move(-1);
+      if (key === "a") decide("accept");
+      if (key === "r") decide("reject");
+    });
+
+    $("#learn-button").addEventListener("click", learn);
+    $("#discover-button").addEventListener("click", startDiscovery);
+
+    loadAll()
+      .then(checkDiscovery)
+      .catch((error) => showNotice(`Could not load leads: ${esc(error.message)}`, "error"));
+  </script>
+</body>
+</html>

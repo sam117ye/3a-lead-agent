@@ -1,0 +1,23 @@
+# Stage 5: ideal client profile
+
+$company_context
+
+The seed companies below are 3A's model clients. Some already buy core materials, others are aspirational targets. Write the text parts of an Ideal Client Profile that will be used to find NEW companies like them.
+
+Seed companies:
+$seeds
+
+Fingerprints across the seeds (token: share of seeds that show it):
+$fingerprints
+
+3A brands that fit the seeds:
+$brand_priority
+
+Write:
+- company_types: 3 to 8 short labels for what these companies build, for example "sailing catamaran OEM" or "electric day-boat builder". Base them on their end products, not on materials.
+- must_have: 2 to 4 minimal criteria every prospect must meet, for example "designs and builds its own boats (OEM), not a dealer or broker".
+- centroid_text: 100 to 150 words describing the ideal client as if it were one company: what it builds, how, with which materials, and what it needs. It is used for similarity matching.
+- exa_search_brief: 150 to 250 words telling a web research agent which companies to find: segments, construction methods and material signals, needs, regions if the seeds suggest any, and what to avoid.
+
+Answer with JSON only, in this shape:
+{"company_types": ["..."], "must_have": ["..."], "centroid_text": "...", "exa_search_brief": "..."}
