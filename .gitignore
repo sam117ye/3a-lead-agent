@@ -4,6 +4,7 @@ key.txt
 
 # Everything the pipeline produces
 output/
+inputs/
 
 # Python
 __pycache__/
